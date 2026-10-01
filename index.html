@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Relojes Exclusivos</title>
+    <!-- Tailwind CSS para un diseño moderno y elegante -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+
+    <!-- Encabezado -->
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold tracking-wider text-amber-500 uppercase flex items-center gap-2">
+                <i class="fa-solid fa-clock"></i> Catálogo de Relojes
+            </h1>
+            <!-- Buscador -->
+            <div class="w-full md:w-96 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="Buscar por nombre o categoría..." 
+                    class="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-amber-500 text-sm">
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Mensaje de Carga -->
+        <div id="loading" class="text-center py-20">
+            <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-500 mb-4"></i>
+            <p class="text-gray-400">Cargando catálogo desde la nube...</p>
+        </div>
+
+        <!-- Contenedor de Productos -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 hidden">
+            <!-- Los productos se inyectarán aquí mediante JavaScript -->
+        </div>
+
+        <!-- Mensaje si no hay resultados -->
+        <div id="noResults" class="text-center py-20 hidden">
+            <p class="text-gray-400 text-lg">No se encontraron relojes con ese criterio.</p>
+        </div>
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="bg-gray-900 border-t border-gray-800 text-center py-6 mt-12 text-sm text-gray-500">
+        <p>&copy; 2026 Catálogo de Relojes. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Script de Conexión con Google Sheets y Lógica -->
+    <script>
+        // ⚠️ REEMPLAZA ESTA URL CON LA DE TU GOOGLE SHEET PUBLICADO O USA UNA API DE LECTURA CSV
+        // (La forma más estable para leer Google Sheets en JS plano es publicarlo como CSV o usar SheetDB / PapaParse)
+        // Aquí usaremos PapaParse para leer directamente un Google Sheet publicado como CSV de forma gratuita y limpia:
+        
+        const SPREADSHEET_CSV_URL = 'PEGA_AQUI_EL_ENLACE_CSV_DE_TU_GOOGLE_SHEET'; 
+        
+        // *Nota: Para obtener el CSV de Google Sheet:*
+        // 1. Archivo > Compartir > Publicar en la web.
+        // 2. En vez de "Página web", selecciona "Valores separados por comas (.csv)".
+        // 3. Copia ese enlace y pégalo arriba.
+    </script>
+    
+    <!-- Librería PapaParse para leer CSV fácilmente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <script>
+        let allProducts = [];
+
+        function cargarRelojes() {
+            // Si aún no has puesto el link, simulamos o avisamos
+            if (SPREADSHEET_CSV_URL.includes('PEGA_AQUI')) {
+                document.getElementById('loading').innerHTML = `
+                    <div class="bg-amber-900/30 border border-amber-600 p-6 rounded-lg max-w-lg mx-auto text-left">
+                        <h3 class="text-amber-400 font-bold mb-2"><i class="fa-solid fa-triangle-exclamation"></i> Configuración pendiente</h3>
+                        <p class="text-sm text-gray-300">Por favor, edita el archivo index.html en GitHub y reemplaza <code>PEGA_AQUI_EL_ENLACE_CSV_DE_TU_GOOGLE_SHEET</code> con el enlace CSV público de tu Google Sheet.</p>
+                    </div>`;
+                return;
+            }
+
+            Papa.parse(SPREADSHEET_CSV_URL, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    allProducts = results.data.filter(item => item.nombre && item.nombre.trim() !== "");
+                    document.getElementById('loading').classList.add('hidden');
+                    renderProducts(allProducts);
+                },
+                error: function(err) {
+                    document.getElementById('loading').innerHTML = `<p class="text-red-400">Error al cargar los datos del catálogo. Verifica el enlace de Google Sheets.</p>`;
+                }
+            });
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            const noResults = document.getElementById('noResults');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                noResults.classList.remove('hidden');
+                grid.classList.add('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg hover:border-amber-500/50 transition duration-300 flex flex-col justify-between";
+                
+                // Mensaje de WhatsApp predeterminado
+                const mensajeWp = encodeURIComponent(`Hola, estoy interesado en el reloj: ${p.nombre} (${p.precio})`);
+                const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; // O pon tu número por defecto
+                const linkWp = telefonoWp ? `https://wa.me/${telefonoWp}?text=${mensajeWp}` : `#`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="h-64 bg-gray-800 overflow-hidden relative">
+                            <img src="${p.imagen || 'https://via.placeholder.com/400x400?text=Sin+Imagen'}" alt="${p.nombre}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                            <span class="absolute top-2 right-2 bg-amber-500 text-gray-950 text-xs font-bold px-2.5 py-1 rounded-full uppercase">${p.categoria || 'Reloj'}</span>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-bold text-white mb-1">${p.nombre}</h3>
+                            <p class="text-amber-400 font-semibold text-xl mb-3">${p.precio}</p>
+                            <p class="text-gray-400 text-sm line-clamp-3 mb-4">${p.descripcion}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <a href="${linkWp}" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200 text-sm">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Consultar por WhatsApp
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Buscador interactivo
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                (p.nombre && p.nombre.toLowerCase().includes(term)) || 
+                (p.categoria && p.categoria.toLowerCase().includes(term))
+            );
+            renderProducts(filtered);
+        });
+
+        // Ejecutar carga al iniciar
+        cargarRelojes();
+    </script>
+</body>
+</html>

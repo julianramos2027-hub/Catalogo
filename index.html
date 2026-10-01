@@ -11,7 +11,7 @@
 <body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
 
     <!-- Encabezado -->
-    <header class="bg-black border-b border-neutral-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+    <header class="bg-black border-b border-neutral-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
         <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
             <h1 class="text-xl font-light tracking-[0.2em] uppercase flex items-center gap-3 text-white">
                 <i class="fa-solid fa-clock text-neutral-400"></i> Catálogo de Relojes
@@ -30,16 +30,14 @@
     <!-- Contenido Principal -->
     <main class="max-w-7xl mx-auto px-6 py-12">
         
-        <!-- Sección de Filtros y Ordenamiento -->
+        <!-- Filtros y Ordenamiento -->
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 pb-6 border-b border-neutral-900">
-            <!-- Botones de Categorías (Filtros) -->
             <div id="categoryFilters" class="flex flex-wrap gap-2">
                 <button onclick="filtrarPorCategoria('TODOS')" class="categoria-btn px-4 py-2 text-xs tracking-wider uppercase bg-white text-black font-medium transition duration-200 border border-white">
                     Todos
                 </button>
             </div>
 
-            <!-- Selector de Ordenamiento -->
             <div class="w-full sm:w-auto flex items-center gap-3">
                 <span class="text-xs text-neutral-500 uppercase tracking-widest whitespace-nowrap">Ordenar por:</span>
                 <select id="sortSelect" onchange="aplicarFiltrosYOrden()" class="bg-neutral-900 border border-neutral-800 text-white text-xs py-2 px-3 rounded-none focus:outline-none focus:border-white cursor-pointer w-full sm:w-48">
@@ -51,22 +49,54 @@
             </div>
         </div>
 
-        <!-- Mensaje de Carga -->
+        <!-- Carga -->
         <div id="loading" class="text-center py-32">
             <i class="fa-solid fa-circle-notch fa-spin text-3xl text-neutral-400 mb-4"></i>
             <p class="text-neutral-500 text-sm tracking-widest uppercase">Cargando colección...</p>
         </div>
 
-        <!-- Contenedor de Productos -->
+        <!-- Cuadrícula de Productos -->
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 hidden">
             <!-- Productos -->
         </div>
 
-        <!-- Mensaje si no hay resultados -->
         <div id="noResults" class="text-center py-32 hidden">
             <p class="text-neutral-500 text-sm tracking-widest">No se encontraron relojes disponibles con estos criterios.</p>
         </div>
     </main>
+
+    <!-- VENTANA MODAL (Vista Detallada) -->
+    <div id="productModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-neutral-950 border border-neutral-800 max-w-4xl w-full relative overflow-hidden flex flex-col md:flex-row shadow-2xl">
+            <!-- Botón Cerrar -->
+            <button onclick="cerrarModal()" class="absolute top-4 right-4 z-20 bg-neutral-900 hover:bg-white hover:text-black text-neutral-400 w-10 h-10 flex items-center justify-center transition duration-200 border border-neutral-800">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Carrusel de imágenes Modal -->
+            <div class="md:w-1/2 h-80 md:h-[450px] bg-neutral-900 relative flex items-center justify-center" id="modalCarousel" data-index="0">
+                <!-- Se inyectan las imágenes dinámicamente -->
+            </div>
+
+            <!-- Información Detallada del Modal -->
+            <div class="md:w-1/2 p-8 flex flex-col justify-between">
+                <div>
+                    <span id="modalCategoria" class="inline-block bg-neutral-900 text-neutral-300 text-[10px] tracking-widest font-light px-3 py-1 uppercase border border-neutral-800 mb-4"></span>
+                    <h2 id="modalNombre" class="text-xl font-normal tracking-wide text-white mb-3"></h2>
+                    <p id="modalPrecio" class="text-neutral-200 font-medium text-2xl mb-6"></p>
+                    <div class="border-t border-neutral-900 pt-4 mb-6">
+                        <h4 class="text-xs uppercase tracking-widest text-neutral-500 mb-2">Descripción del modelo</h4>
+                        <p id="modalDescripcion" class="text-neutral-400 text-xs leading-relaxed"></p>
+                    </div>
+                </div>
+                <div>
+                    <a id="modalWhatsappBtn" href="#" target="_blank" class="w-full bg-white hover:bg-neutral-200 text-black font-medium tracking-wider py-3 px-4 flex items-center justify-center gap-2 transition duration-200 text-xs uppercase">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Consultar este modelo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Pie de página -->
     <footer class="bg-black border-t border-neutral-900 text-center py-8 mt-20 text-xs text-neutral-600 tracking-wider">
@@ -77,22 +107,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // ⚠️ PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS
+        // Tu enlace CSV de Google Sheets ya está configurado aquí
         const SPREADSHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbHlNVFQd1-PmrP7QUUfdWThmZkYL6OgK5g1aYOtP4YSffYgaqwOurwm0so64v6KGrIe3cPUMCzJpU/pub?output=csv'; 
         
         let allProducts = [];
         let categoriaActual = 'TODOS';
 
         function cargarRelojes() {
-            if (SPREADSHEET_CSV_URL.includes('PEGA_AQUI')) {
-                document.getElementById('loading').innerHTML = `
-                    <div class="bg-neutral-900 border border-neutral-800 p-8 max-w-md mx-auto text-left">
-                        <h3 class="text-white font-medium mb-2 tracking-wide"><i class="fa-solid fa-triangle-exclamation text-neutral-400"></i> Falta configurar el enlace</h3>
-                        <p class="text-xs text-neutral-400 leading-relaxed">Edita el archivo <code>index.html</code> en GitHub y reemplaza <code>PEGA_AQUI_EL_ENLACE_CSV_DE_TU_GOOGLE_SHEET</code> con tu enlace de Google Sheets.</p>
-                    </div>`;
-                return;
-            }
-
             Papa.parse(SPREADSHEET_CSV_URL, {
                 download: true,
                 header: true,
@@ -103,12 +124,11 @@
                     aplicarFiltrosYOrden();
                 },
                 error: function(err) {
-                    document.getElementById('loading').innerHTML = `<p class="text-neutral-400 text-sm">Error al cargar los datos. Verifica el enlace de Google Sheets.</p>`;
+                    document.getElementById('loading').innerHTML = `<p class="text-neutral-400 text-sm">Error al cargar los datos. Verifica que tu hoja de Google Sheets esté publicada correctamente en la web.</p>`;
                 }
             });
         }
 
-        // Crear botones de categorías dinámicamente basados en el Sheet
         function generarBotonesCategorias() {
             const container = document.getElementById('categoryFilters');
             const categorias = ['TODOS', ...new Set(allProducts.map(p => p.categoria ? p.categoria.trim().toUpperCase() : 'GENERAL'))];
@@ -130,8 +150,9 @@
             });
         }
 
-        // Control del carrusel de imágenes
-        window.cambiarImagen = function(indexCard, direccion) {
+        // Carrusel en Tarjetas Principales
+        window.cambiarImagen = function(indexCard, direccion, event) {
+            if(event) event.stopPropagation();
             const container = document.getElementById(`carousel-${indexCard}`);
             const imgs = container.querySelectorAll('.carousel-img');
             let currentIndex = parseInt(container.getAttribute('data-index'));
@@ -146,12 +167,74 @@
             container.setAttribute('data-index', currentIndex);
         }
 
-        // Aplicar buscador, filtros de categoría y ordenamiento juntos
+        // Carrusel dentro del Modal
+        window.cambiarImagenModal = function(direccion) {
+            const container = document.getElementById('modalCarousel');
+            const imgs = container.querySelectorAll('.modal-carousel-img');
+            let currentIndex = parseInt(container.getAttribute('data-index'));
+
+            imgs[currentIndex].classList.add('hidden');
+            
+            currentIndex += direccion;
+            if (currentIndex < 0) currentIndex = imgs.length - 1;
+            if (currentIndex >= imgs.length) currentIndex = 0;
+
+            imgs[currentIndex].classList.remove('hidden');
+            container.setAttribute('data-index', currentIndex);
+        }
+
+        // Abrir Modal con detalles
+        window.abrirModal = function(indexProd) {
+            const p = allProducts[indexProd];
+            document.getElementById('modalNombre').innerText = p.nombre || '';
+            document.getElementById('modalCategoria').innerText = p.categoria || 'Reloj';
+            document.getElementById('modalPrecio').innerText = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
+            document.getElementById('modalDescripcion').innerText = p.descripcion || 'Sin descripción detallada disponible para este modelo.';
+
+            let imagenes = [];
+            if (p.imagen && p.imagen.trim() !== "") {
+                imagenes = p.imagen.split(',').map(img => img.trim()).filter(img => img !== "");
+            }
+            if (imagenes.length === 0) {
+                imagenes = ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'];
+            }
+
+            const modalCarousel = document.getElementById('modalCarousel');
+            modalCarousel.setAttribute('data-index', '0');
+            let modalImgsHtml = '';
+            imagenes.forEach((imgUrl, imgIdx) => {
+                const hiddenClass = imgIdx === 0 ? '' : 'hidden';
+                modalImgsHtml += `<img src="${imgUrl}" alt="${p.nombre}" class="modal-carousel-img w-full h-full object-cover ${hiddenClass}">`;
+            });
+
+            if (imagenes.length > 1) {
+                modalImgsHtml += `
+                    <button onclick="cambiarImagenModal(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white w-9 h-9 rounded-full flex items-center justify-center border border-neutral-800 transition">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <button onclick="cambiarImagenModal(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white w-9 h-9 rounded-full flex items-center justify-center border border-neutral-800 transition">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                `;
+            }
+            modalCarousel.innerHTML = modalImgsHtml;
+
+            const mensajeWp = encodeURIComponent(`Hola, estoy interesado en el reloj: ${p.nombre} (${p.precio})`);
+            const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 
+            const linkWp = telefonoWp ? `https://wa.me/${telefonoWp}?text=${mensajeWp}` : `#`;
+            document.getElementById('modalWhatsappBtn').href = linkWp;
+
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        window.cerrarModal = function() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
         function aplicarFiltrosYOrden() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const sortOrder = document.getElementById('sortSelect').value;
 
-            // 1. Filtrar
             let filtered = allProducts.filter(p => {
                 const nombreMatch = p.nombre && p.nombre.toLowerCase().includes(searchTerm);
                 const descMatch = p.descripcion && p.descripcion.toLowerCase().includes(searchTerm);
@@ -163,7 +246,6 @@
                 return matchSearch && matchCategoria;
             });
 
-            // 2. Ordenar
             filtered.sort((a, b) => {
                 const precioA = Number(a.precio || 0);
                 const precioB = Number(b.precio || 0);
@@ -173,7 +255,7 @@
                 if (sortOrder === 'precio-asc') return precioA - precioB;
                 if (sortOrder === 'precio-desc') return precioB - precioA;
                 if (sortOrder === 'nombre-asc') return nombreA.localeCompare(nombreB);
-                return 0; // por defecto
+                return 0;
             });
 
             renderProducts(filtered);
@@ -195,8 +277,9 @@
 
             products.forEach((p, index) => {
                 const card = document.createElement('div');
-                card.className = "bg-neutral-950 border border-neutral-800 overflow-hidden flex flex-col justify-between group hover:border-neutral-500 transition duration-300";
-                
+                card.className = "bg-neutral-950 border border-neutral-800 overflow-hidden flex flex-col justify-between group hover:border-neutral-500 transition duration-300 cursor-pointer";
+                card.onclick = () => abrirModal(allProducts.indexOf(p));
+
                 let imagenes = [];
                 if (p.imagen && p.imagen.trim() !== "") {
                     imagenes = p.imagen.split(',').map(img => img.trim()).filter(img => img !== "");
@@ -214,10 +297,10 @@
                 let botonesHtml = '';
                 if (imagenes.length > 1) {
                     botonesHtml = `
-                        <button onclick="cambiarImagen(${index}, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
+                        <button onclick="cambiarImagen(${index}, -1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
                             <i class="fa-solid fa-chevron-left text-xs"></i>
                         </button>
-                        <button onclick="cambiarImagen(${index}, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
+                        <button onclick="cambiarImagen(${index}, 1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
                             <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
                     `;
@@ -236,12 +319,11 @@
                         </div>
                         <div class="p-6">
                             <h3 class="text-base font-normal tracking-wide text-white mb-2">${p.nombre}</h3>
-                            <p class="text-neutral-200 font-medium text-lg mb-3">$${Number(p.precio || 0).toLocaleString('es-CO')}</p>
-                            <p class="text-neutral-400 text-xs leading-relaxed line-clamp-3 mb-6">${p.descripcion || 'Sin descripción disponible.'}</p>
+                            <p class="text-neutral-200 font-medium text-lg">$${Number(p.precio || 0).toLocaleString('es-CO')}</p>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
-                        <a href="${linkWp}" target="_blank" class="w-full bg-white hover:bg-neutral-200 text-black font-medium tracking-wider py-2.5 px-4 flex items-center justify-center gap-2 transition duration-200 text-xs uppercase">
+                        <a href="${linkWp}" onclick="event.stopPropagation()" target="_blank" class="w-full bg-white hover:bg-neutral-200 text-black font-medium tracking-wider py-2.5 px-4 flex items-center justify-center gap-2 transition duration-200 text-xs uppercase">
                             <i class="fa-brands fa-whatsapp text-sm"></i> Consultar
                         </a>
                     </div>
@@ -250,7 +332,6 @@
             });
         }
 
-        // Escuchar cambios en el buscador en tiempo real
         document.getElementById('searchInput').addEventListener('input', aplicarFiltrosYOrden);
 
         cargarRelojes();

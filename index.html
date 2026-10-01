@@ -16,11 +16,12 @@
             <h1 class="text-xl font-light tracking-[0.2em] uppercase flex items-center gap-3 text-white">
                 <i class="fa-solid fa-clock text-neutral-400"></i> Catálogo de Relojes
             </h1>
+            <!-- Buscador -->
             <div class="w-full md:w-80 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                     <i class="fa-solid fa-search text-sm"></i>
                 </span>
-                <input type="text" id="searchInput" placeholder="Buscar modelo o categoría..." 
+                <input type="text" id="searchInput" placeholder="Buscar modelo..." 
                     class="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-500 transition duration-200">
             </div>
         </div>
@@ -28,17 +29,42 @@
 
     <!-- Contenido Principal -->
     <main class="max-w-7xl mx-auto px-6 py-12">
+        
+        <!-- Sección de Filtros y Ordenamiento -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 pb-6 border-b border-neutral-900">
+            <!-- Botones de Categorías (Filtros) -->
+            <div id="categoryFilters" class="flex flex-wrap gap-2">
+                <button onclick="filtrarPorCategoria('TODOS')" class="categoria-btn px-4 py-2 text-xs tracking-wider uppercase bg-white text-black font-medium transition duration-200 border border-white">
+                    Todos
+                </button>
+            </div>
+
+            <!-- Selector de Ordenamiento -->
+            <div class="w-full sm:w-auto flex items-center gap-3">
+                <span class="text-xs text-neutral-500 uppercase tracking-widest whitespace-nowrap">Ordenar por:</span>
+                <select id="sortSelect" onchange="aplicarFiltrosYOrden()" class="bg-neutral-900 border border-neutral-800 text-white text-xs py-2 px-3 rounded-none focus:outline-none focus:border-white cursor-pointer w-full sm:w-48">
+                    <option value="defecto">Recomendados</option>
+                    <option value="precio-asc">Precio: Menor a Mayor</option>
+                    <option value="precio-desc">Precio: Mayor a Menor</option>
+                    <option value="nombre-asc">Nombre: A - Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mensaje de Carga -->
         <div id="loading" class="text-center py-32">
             <i class="fa-solid fa-circle-notch fa-spin text-3xl text-neutral-400 mb-4"></i>
             <p class="text-neutral-500 text-sm tracking-widest uppercase">Cargando colección...</p>
         </div>
 
+        <!-- Contenedor de Productos -->
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 hidden">
             <!-- Productos -->
         </div>
 
+        <!-- Mensaje si no hay resultados -->
         <div id="noResults" class="text-center py-32 hidden">
-            <p class="text-neutral-500 text-sm tracking-widest">No se encontraron relojes disponibles.</p>
+            <p class="text-neutral-500 text-sm tracking-widest">No se encontraron relojes disponibles con estos criterios.</p>
         </div>
     </main>
 
@@ -55,6 +81,7 @@
         const SPREADSHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbHlNVFQd1-PmrP7QUUfdWThmZkYL6OgK5g1aYOtP4YSffYgaqwOurwm0so64v6KGrIe3cPUMCzJpU/pub?output=csv'; 
         
         let allProducts = [];
+        let categoriaActual = 'TODOS';
 
         function cargarRelojes() {
             if (SPREADSHEET_CSV_URL.includes('PEGA_AQUI')) {
@@ -72,7 +99,8 @@
                 complete: function(results) {
                     allProducts = results.data.filter(item => item.nombre && item.nombre.trim() !== "");
                     document.getElementById('loading').classList.add('hidden');
-                    renderProducts(allProducts);
+                    generarBotonesCategorias();
+                    aplicarFiltrosYOrden();
                 },
                 error: function(err) {
                     document.getElementById('loading').innerHTML = `<p class="text-neutral-400 text-sm">Error al cargar los datos. Verifica el enlace de Google Sheets.</p>`;
@@ -80,7 +108,29 @@
             });
         }
 
-        // Funciones globales para controlar los carruseles individuales
+        // Crear botones de categorías dinámicamente basados en el Sheet
+        function generarBotonesCategorias() {
+            const container = document.getElementById('categoryFilters');
+            const categorias = ['TODOS', ...new Set(allProducts.map(p => p.categoria ? p.categoria.trim().toUpperCase() : 'GENERAL'))];
+            
+            container.innerHTML = '';
+            categorias.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `categoria-btn px-4 py-2 text-xs tracking-wider uppercase transition duration-200 border ${cat === categoriaActual ? 'bg-white text-black font-medium border-white' : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-600 hover:text-white'}`;
+                btn.innerText = cat;
+                btn.onclick = () => {
+                    categoriaActual = cat;
+                    document.querySelectorAll('.categoria-btn').forEach(b => {
+                        b.className = "categoria-btn px-4 py-2 text-xs tracking-wider uppercase transition duration-200 border bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-600 hover:text-white";
+                    });
+                    btn.className = "categoria-btn px-4 py-2 text-xs tracking-wider uppercase transition duration-200 border bg-white text-black font-medium border-white";
+                    aplicarFiltrosYOrden();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // Control del carrusel de imágenes
         window.cambiarImagen = function(indexCard, direccion) {
             const container = document.getElementById(`carousel-${indexCard}`);
             const imgs = container.querySelectorAll('.carousel-img');
@@ -94,6 +144,39 @@
 
             imgs[currentIndex].classList.remove('hidden');
             container.setAttribute('data-index', currentIndex);
+        }
+
+        // Aplicar buscador, filtros de categoría y ordenamiento juntos
+        function aplicarFiltrosYOrden() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortOrder = document.getElementById('sortSelect').value;
+
+            // 1. Filtrar
+            let filtered = allProducts.filter(p => {
+                const nombreMatch = p.nombre && p.nombre.toLowerCase().includes(searchTerm);
+                const descMatch = p.descripcion && p.descripcion.toLowerCase().includes(searchTerm);
+                const catMatch = p.categoria && p.categoria.toLowerCase().includes(searchTerm);
+                
+                const matchSearch = nombreMatch || descMatch || catMatch;
+                const matchCategoria = categoriaActual === 'TODOS' || (p.categoria && p.categoria.trim().toUpperCase() === categoriaActual);
+
+                return matchSearch && matchCategoria;
+            });
+
+            // 2. Ordenar
+            filtered.sort((a, b) => {
+                const precioA = Number(a.precio || 0);
+                const precioB = Number(b.precio || 0);
+                const nombreA = (a.nombre || '').toLowerCase();
+                const nombreB = (b.nombre || '').toLowerCase();
+
+                if (sortOrder === 'precio-asc') return precioA - precioB;
+                if (sortOrder === 'precio-desc') return precioB - precioA;
+                if (sortOrder === 'nombre-asc') return nombreA.localeCompare(nombreB);
+                return 0; // por defecto
+            });
+
+            renderProducts(filtered);
         }
 
         function renderProducts(products) {
@@ -114,7 +197,6 @@
                 const card = document.createElement('div');
                 card.className = "bg-neutral-950 border border-neutral-800 overflow-hidden flex flex-col justify-between group hover:border-neutral-500 transition duration-300";
                 
-                // Procesar imágenes separadas por comas
                 let imagenes = [];
                 if (p.imagen && p.imagen.trim() !== "") {
                     imagenes = p.imagen.split(',').map(img => img.trim()).filter(img => img !== "");
@@ -123,14 +205,12 @@
                     imagenes = ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'];
                 }
 
-                // Generar HTML de las imágenes del carrusel
                 let imgsHtml = '';
                 imagenes.forEach((imgUrl, imgIdx) => {
                     const hiddenClass = imgIdx === 0 ? '' : 'hidden';
                     imgsHtml += `<img src="${imgUrl}" alt="${p.nombre}" class="carousel-img w-full h-full object-cover opacity-90 group-hover:opacity-100 transition duration-300 ${hiddenClass}">`;
                 });
 
-                // Botones de navegación solo si hay más de 1 imagen
                 let botonesHtml = '';
                 if (imagenes.length > 1) {
                     botonesHtml = `
@@ -170,14 +250,8 @@
             });
         }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allProducts.filter(p => 
-                (p.nombre && p.nombre.toLowerCase().includes(term)) || 
-                (p.categoria && p.categoria.toLowerCase().includes(term))
-            );
-            renderProducts(filtered);
-        });
+        // Escuchar cambios en el buscador en tiempo real
+        document.getElementById('searchInput').addEventListener('input', aplicarFiltrosYOrden);
 
         cargarRelojes();
     </script>

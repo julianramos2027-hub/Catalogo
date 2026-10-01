@@ -107,7 +107,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // Tu enlace CSV de Google Sheets ya está configurado aquí
         const SPREADSHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbHlNVFQd1-PmrP7QUUfdWThmZkYL6OgK5g1aYOtP4YSffYgaqwOurwm0so64v6KGrIe3cPUMCzJpU/pub?output=csv'; 
         
         let allProducts = [];
@@ -124,7 +123,7 @@
                     aplicarFiltrosYOrden();
                 },
                 error: function(err) {
-                    document.getElementById('loading').innerHTML = `<p class="text-neutral-400 text-sm">Error al cargar los datos. Verifica que tu hoja de Google Sheets esté publicada correctamente en la web.</p>`;
+                    document.getElementById('loading').innerHTML = `<p class="text-neutral-400 text-sm">Error al cargar los datos. Verifica que tu hoja de Google Sheets esté publicada correctamente.</p>`;
                 }
             });
         }
@@ -150,7 +149,6 @@
             });
         }
 
-        // Carrusel en Tarjetas Principales
         window.cambiarImagen = function(indexCard, direccion, event) {
             if(event) event.stopPropagation();
             const container = document.getElementById(`carousel-${indexCard}`);
@@ -167,7 +165,6 @@
             container.setAttribute('data-index', currentIndex);
         }
 
-        // Carrusel dentro del Modal
         window.cambiarImagenModal = function(direccion) {
             const container = document.getElementById('modalCarousel');
             const imgs = container.querySelectorAll('.modal-carousel-img');
@@ -183,7 +180,6 @@
             container.setAttribute('data-index', currentIndex);
         }
 
-        // Abrir Modal con detalles
         window.abrirModal = function(indexProd) {
             const p = allProducts[indexProd];
             document.getElementById('modalNombre').innerText = p.nombre || '';
@@ -219,7 +215,12 @@
             }
             modalCarousel.innerHTML = modalImgsHtml;
 
-            const mensajeWp = encodeURIComponent(`Hola, estoy interesado en el reloj: ${p.nombre} (${p.precio})`);
+            // Mensaje de WhatsApp más atractivo e informativo
+            const precioFormateado = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
+            const primeraImagen = imagenes[0];
+            const textoMensaje = `Hola 👋, estoy interesado/a en adquirir el siguiente modelo de su catálogo:\n\n✨ *${p.nombre}*\n💰 Precio: ${precioFormateado}\n\n📸 Foto de referencia:\n${primeraImagen}\n\n¿Me podrian brindar más información sobre disponibilidad y métodos de pago por favor?`;
+            
+            const mensajeWp = encodeURIComponent(textoMensaje);
             const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 
             const linkWp = telefonoWp ? `https://wa.me/${telefonoWp}?text=${mensajeWp}` : `#`;
             document.getElementById('modalWhatsappBtn').href = linkWp;
@@ -306,7 +307,11 @@
                     `;
                 }
 
-                const mensajeWp = encodeURIComponent(`Hola, estoy interesado en el reloj: ${p.nombre} (${p.precio})`);
+                const precioFormateado = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
+                const primeraImagenCard = imagenes[0];
+                const textoMensajeCard = `Hola 👋, estoy interesado/a en adquirir el siguiente modelo de su catálogo:\n\n✨ *${p.nombre}*\n💰 Precio: ${precioFormateado}\n\n📸 Foto de referencia:\n${primeraImagenCard}\n\n¿Me podrian brindar más información sobre disponibilidad y métodos de pago por favor?`;
+                
+                const mensajeWp = encodeURIComponent(textoMensajeCard);
                 const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 
                 const linkWp = telefonoWp ? `https://wa.me/${telefonoWp}?text=${mensajeWp}` : `#`;
 
@@ -319,7 +324,7 @@
                         </div>
                         <div class="p-6">
                             <h3 class="text-base font-normal tracking-wide text-white mb-2">${p.nombre}</h3>
-                            <p class="text-neutral-200 font-medium text-lg">$${Number(p.precio || 0).toLocaleString('es-CO')}</p>
+                            <p class="text-neutral-200 font-medium text-lg">${precioFormateado}</p>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
@@ -332,6 +337,7 @@
             });
         }
 
+        document.getElementById('searchInput').value = '';
         document.getElementById('searchInput').addEventListener('input', aplicarFiltrosYOrden);
 
         cargarRelojes();

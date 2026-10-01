@@ -10,13 +10,12 @@
 </head>
 <body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
 
-    <!-- Encabezado Estilo Minimalista (Negro y Gris) -->
+    <!-- Encabezado -->
     <header class="bg-black border-b border-neutral-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
         <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
             <h1 class="text-xl font-light tracking-[0.2em] uppercase flex items-center gap-3 text-white">
                 <i class="fa-solid fa-clock text-neutral-400"></i> Catálogo de Relojes
             </h1>
-            <!-- Buscador Minimalista -->
             <div class="w-full md:w-80 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                     <i class="fa-solid fa-search text-sm"></i>
@@ -29,19 +28,15 @@
 
     <!-- Contenido Principal -->
     <main class="max-w-7xl mx-auto px-6 py-12">
-        
-        <!-- Mensaje de Carga -->
         <div id="loading" class="text-center py-32">
             <i class="fa-solid fa-circle-notch fa-spin text-3xl text-neutral-400 mb-4"></i>
             <p class="text-neutral-500 text-sm tracking-widest uppercase">Cargando colección...</p>
         </div>
 
-        <!-- Contenedor de Productos -->
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 hidden">
-            <!-- Los productos se inyectarán aquí -->
+            <!-- Productos -->
         </div>
 
-        <!-- Mensaje si no hay resultados -->
         <div id="noResults" class="text-center py-32 hidden">
             <p class="text-neutral-500 text-sm tracking-widest">No se encontraron relojes disponibles.</p>
         </div>
@@ -56,7 +51,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // ⚠️ PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS ENTRE COMILLAS
+        // ⚠️ PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS
         const SPREADSHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbHlNVFQd1-PmrP7QUUfdWThmZkYL6OgK5g1aYOtP4YSffYgaqwOurwm0so64v6KGrIe3cPUMCzJpU/pub?output=csv'; 
         
         let allProducts = [];
@@ -85,6 +80,22 @@
             });
         }
 
+        // Funciones globales para controlar los carruseles individuales
+        window.cambiarImagen = function(indexCard, direccion) {
+            const container = document.getElementById(`carousel-${indexCard}`);
+            const imgs = container.querySelectorAll('.carousel-img');
+            let currentIndex = parseInt(container.getAttribute('data-index'));
+
+            imgs[currentIndex].classList.add('hidden');
+            
+            currentIndex += direccion;
+            if (currentIndex < 0) currentIndex = imgs.length - 1;
+            if (currentIndex >= imgs.length) currentIndex = 0;
+
+            imgs[currentIndex].classList.remove('hidden');
+            container.setAttribute('data-index', currentIndex);
+        }
+
         function renderProducts(products) {
             const grid = document.getElementById('productGrid');
             const noResults = document.getElementById('noResults');
@@ -99,20 +110,48 @@
             noResults.classList.add('hidden');
             grid.classList.remove('hidden');
 
-            products.forEach(p => {
+            products.forEach((p, index) => {
                 const card = document.createElement('div');
                 card.className = "bg-neutral-950 border border-neutral-800 overflow-hidden flex flex-col justify-between group hover:border-neutral-500 transition duration-300";
                 
+                // Procesar imágenes separadas por comas
+                let imagenes = [];
+                if (p.imagen && p.imagen.trim() !== "") {
+                    imagenes = p.imagen.split(',').map(img => img.trim()).filter(img => img !== "");
+                }
+                if (imagenes.length === 0) {
+                    imagenes = ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'];
+                }
+
+                // Generar HTML de las imágenes del carrusel
+                let imgsHtml = '';
+                imagenes.forEach((imgUrl, imgIdx) => {
+                    const hiddenClass = imgIdx === 0 ? '' : 'hidden';
+                    imgsHtml += `<img src="${imgUrl}" alt="${p.nombre}" class="carousel-img w-full h-full object-cover opacity-90 group-hover:opacity-100 transition duration-300 ${hiddenClass}">`;
+                });
+
+                // Botones de navegación solo si hay más de 1 imagen
+                let botonesHtml = '';
+                if (imagenes.length > 1) {
+                    botonesHtml = `
+                        <button onclick="cambiarImagen(${index}, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <button onclick="cambiarImagen(${index}, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200 border border-neutral-800">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    `;
+                }
+
                 const mensajeWp = encodeURIComponent(`Hola, estoy interesado en el reloj: ${p.nombre} (${p.precio})`);
                 const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 
                 const linkWp = telefonoWp ? `https://wa.me/${telefonoWp}?text=${mensajeWp}` : `#`;
 
                 card.innerHTML = `
                     <div>
-                        <div class="h-72 bg-neutral-900 overflow-hidden relative border-b border-neutral-900">
-                            <img src="${p.imagen && p.imagen.trim() !== '' ? p.imagen : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'}" 
-                                 alt="${p.nombre}" 
-                                 class="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition duration-500">
+                        <div class="h-72 bg-neutral-900 overflow-hidden relative border-b border-neutral-800" id="carousel-${index}" data-index="0">
+                            ${imgsHtml}
+                            ${botonesHtml}
                             <span class="absolute top-3 right-3 bg-black/80 backdrop-blur-sm text-neutral-300 text-[10px] tracking-widest font-light px-3 py-1 uppercase border border-neutral-800">${p.categoria || 'Reloj'}</span>
                         </div>
                         <div class="p-6">

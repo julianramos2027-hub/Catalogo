@@ -307,7 +307,7 @@
                 }
 
                 const precioFormateado = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
-                const textoMensajeCard = `Hola, estoy interesado en adquirir el siguiente modelo de su catálogo:\n\n- Modelo: *${p.nombre}*\n- Precio: *${precioFormateado}*\n\n¿Me podrían brindar más información sobre disponibilidad y métodos de pago por favor?`;
+                const textoMensajeCard = `Hola, estoy interesado en adquirir el siguiente modelo de su catálogo:\n\n- *${p.nombre}*\n- Precio: *${precioFormateado}*\n\n`;
                 
                 const mensajeWp = encodeURIComponent(textoMensajeCard);
                 const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 

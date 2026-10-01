@@ -215,9 +215,9 @@
             }
             modalCarousel.innerHTML = modalImgsHtml;
 
-            // Mensaje de WhatsApp elegante sin links largos
+            // Mensaje estructurado con texto limpio (sin emojis problemáticos)
             const precioFormateado = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
-            const textoMensaje = `Hola 👋, estoy interesado/a en adquirir el siguiente modelo de su catálogo:\n\n✨ *${p.nombre}*\n💰 Precio: ${precioFormateado}\n\n¿Me podrían brindar más información sobre disponibilidad y métodos de pago por favor?`;
+            const textoMensaje = `Hola, estoy interesado en adquirir el siguiente modelo de su catálogo:\n\n- Modelo: *${p.nombre}*\n- Precio: *${precioFormateado}*\n\n¿Me podrían brindar más información sobre disponibilidad y métodos de pago por favor?`;
             
             const mensajeWp = encodeURIComponent(textoMensaje);
             const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 
@@ -307,7 +307,7 @@
                 }
 
                 const precioFormateado = `$${Number(p.precio || 0).toLocaleString('es-CO')}`;
-                const textoMensajeCard = `Hola :smile , estoy interesado/a en adquirir el siguiente modelo de su catálogo:\n\n :star *${p.nombre}*\n:money Precio: ${precioFormateado}`;
+                const textoMensajeCard = `Hola, estoy interesado en adquirir el siguiente modelo de su catálogo:\n\n- Modelo: *${p.nombre}*\n- Precio: *${precioFormateado}*\n\n¿Me podrían brindar más información sobre disponibilidad y métodos de pago por favor?`;
                 
                 const mensajeWp = encodeURIComponent(textoMensajeCard);
                 const telefonoWp = p.whatsapp ? p.whatsapp.trim() : ''; 

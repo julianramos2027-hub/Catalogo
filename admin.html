@@ -31,14 +31,39 @@
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Nombre *</label>
                     <input type="text" id="nombre" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
                 </div>
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Precio Actual *</label>
-                    <input type="number" id="precio" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                
+                <div class="flex gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs text-neutral-400 mb-1">Precio Original</label>
+                        <input type="number" id="precio_original" placeholder="Ej: 500000" oninput="calcularDescuentoEnVivo()" class="bg-neutral-900 border border-neutral-800 p-2 text-white text-sm w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-neutral-400 mb-1">Precio con Descuento</label>
+                        <input type="number" id="precio" placeholder="Ej: 350000" oninput="calcularDescuentoEnVivo()" class="bg-neutral-900 border border-neutral-800 p-2 text-white text-sm w-full">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Precio Original (Opcional)</label>
-                    <input type="number" id="precio_original" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                
+                <!-- Etiqueta donde se previsualiza el descuento -->
+                <div id="previewDescuento" class="text-xs text-neutral-400 mb-4">
+                    Descuento aplicado: <span id="textoDescuento" class="text-white font-semibold">0%</span>
                 </div>
+                
+                <script>
+                function calcularDescuentoEnVivo() {
+                    const pOriginal = parseFloat(document.getElementById('precio_original').value) || 0;
+                    const pActual = parseFloat(document.getElementById('precio').value) || 0;
+                    const spanTexto = document.getElementById('textoDescuento');
+                
+                    if (pOriginal > pActual && pOriginal > 0) {
+                        const descuento = Math.round(((pOriginal - pActual) / pOriginal) * 100);
+                        spanTexto.innerText = `-${descuento}%`;
+                        spanTexto.className = "text-red-400 font-semibold bg-red-500/20 px-2 py-0.5 rounded border border-red-500/30";
+                    } else {
+                        spanTexto.innerText = "0%";
+                        spanTexto.className = "text-white font-semibold";
+                    }
+                }
+                </script>
                 <div class="md:col-span-2">
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">URLs de Imágenes (Separadas por comas) *</label>
                     <input type="text" id="imagen" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">

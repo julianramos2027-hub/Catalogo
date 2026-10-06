@@ -391,5 +391,54 @@
 
         cargarRelojes();
     </script>
+
+    <!-- ========================================== -->
+    <script>
+    // SCRIPT DE GESTOS TÁCTILES (SWIPE) PARA LAS IMÁGENES
+    // ==========================================
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+        // Detectar si el toque comenzó dentro de una tarjeta de producto o en el modal
+        const targetContainer = e.target.closest('[id^="carousel-"], #modalCarousel');
+        if (targetContainer) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+    }, {passive: true});
+
+    document.addEventListener('touchend', e => {
+        const targetContainer = e.target.closest('[id^="carousel-"], #modalCarousel');
+        if (targetContainer) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe(targetContainer);
+        }
+    }, {passive: true});
+
+    function handleSwipe(container) {
+        const threshold = 50; // Distancia mínima en píxeles para reconocer el gesto
+        const containerId = container.id;
+
+        if (touchEndX + threshold < touchStartX) {
+            // Deslizó hacia la IZQUIERDA -> Siguiente imagen
+            if (containerId === 'modalCarousel') {
+                cambiarImagenModal(1);
+            } else if (containerId.startsWith('carousel-')) {
+                const indexCard = containerId.split('-')[1];
+                cambiarImagen(parseInt(indexCard), 1);
+            }
+        }
+        
+        if (touchEndX > touchStartX + threshold) {
+            // Deslizó hacia la DERECHA -> Imagen anterior
+            if (containerId === 'modalCarousel') {
+                cambiarImagenModal(-1);
+            } else if (containerId.startsWith('carousel-')) {
+                const indexCard = containerId.split('-')[1];
+                cambiarImagen(parseInt(indexCard), -1);
+            }
+        }
+    }
+    </script>
 </body>
 </html>

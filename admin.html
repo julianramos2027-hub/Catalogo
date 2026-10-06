@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Catálogo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black min-h-screen flex flex-col justify-between">
+
+    <!-- Encabezado -->
+    <header class="bg-black border-b border-neutral-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+        <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
+            <h1 class="text-xl font-light tracking-[0.2em] uppercase flex items-center gap-3 text-white">
+                <i class="fa-solid fa-lock text-neutral-400"></i> Panel Administrador
+            </h1>
+            <a href="index.html" class="text-xs text-neutral-400 hover:text-white transition uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Ver Catálogo
+            </a>
+        </div>
+    </header>
+
+    <!-- Contenido Principal / Formulario -->
+    <main class="max-w-2xl mx-auto px-6 py-12 w-full flex-grow">
+        <div class="mb-8">
+            <h2 class="text-lg font-normal tracking-wide text-white mb-1">Agregar Nuevo Reloj</h2>
+            <p class="text-neutral-500 text-xs tracking-wider">Completa los campos para publicar un nuevo modelo instantáneamente en tu Google Sheets.</p>
+        </div>
+
+        <form id="productForm" onsubmit="enviarProducto(event)" class="space-y-6 bg-neutral-950 border border-neutral-800 p-8">
+            
+            <!-- Nombre -->
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Nombre del Modelo *</label>
+                <input type="text" id="nombre" required placeholder="Ej. Rolex Submariner Black" 
+                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+            </div>
+
+            <!-- Precios -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Precio Actual ($) *</label>
+                    <input type="number" id="precio" required placeholder="350000" 
+                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Precio Original / Oferta ($)</label>
+                    <input type="number" id="precio_original" placeholder="Opcional (para tachar)" 
+                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                </div>
+            </div>
+
+            <!-- Categoría y Estado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Categoría *</label>
+                    <input type="text" id="categoria" required placeholder="Ej. Hombre, Mujer, Quartz" 
+                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Estado de Disponibilidad *</label>
+                    <select id="estado" class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white cursor-pointer">
+                        <option value="Disponible">Disponible (Entrega inmediata)</option>
+                        <option value="Por encargo">Por encargo (Bajo pedido)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Enlaces de Imágenes -->
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">URLs de Imágenes (Separadas por comas) *</label>
+                <input type="text" id="imagen" required placeholder="Ej. Imagenes/Men's/Frontal.webp, Imagenes/Men's/Dorsal.png" 
+                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                <p class="text-[10px] text-neutral-500 mt-1">Rutas exactas de tus imágenes dentro del repositorio de GitHub.</p>
+            </div>
+
+            <!-- WhatsApp -->
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Número de WhatsApp (con código de país) *</label>
+                <input type="text" id="whatsapp" required value="573000000000" 
+                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+            </div>
+
+            <!-- Descripción -->
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Descripción del Reloj</label>
+                <textarea id="descripcion" rows="3" placeholder="Detalles de maquinaria, material de la pulsera, resistencia al agua..." 
+                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition"></textarea>
+            </div>
+
+            <!-- Botón Enviar -->
+            <button type="submit" id="submitBtn" class="w-full bg-white hover:bg-neutral-200 text-black font-medium tracking-wider py-3 px-4 flex items-center justify-center gap-2 transition duration-200 text-xs uppercase cursor-pointer">
+                <i class="fa-solid fa-cloud-arrow-up text-sm"></i> Guardar Producto en la Base de Datos
+            </button>
+
+            <!-- Mensaje de estado -->
+            <div id="responseMessage" class="hidden text-center text-xs tracking-wider py-3 border"></div>
+        </form>
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="bg-black border-t border-neutral-900 text-center py-8 text-xs text-neutral-600 tracking-wider">
+        <p>&copy; 2026 PANEL ADMINISTRADOR - CATÁLOGO DE RELOJES</p>
+    </footer>
+
+    <script>
+        // Tu URL de Google Apps Script proporcionada
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9Uv6y_4XsBQmysUjXvwiCC9J557X55ebP3onqFUJ9Qhy7if1oZmifWisdizdk8wei/exec';
+
+        function enviarProducto(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const msgBox = document.getElementById('responseMessage');
+            
+            // Cambiar estado visual del botón
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-sm"></i> Guardando en Google Sheets...`;
+            msgBox.classList.add('hidden');
+
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                precio: document.getElementById('precio').value,
+                precio_original: document.getElementById('precio_original').value,
+                categoria: document.getElementById('categoria').value,
+                estado: document.getElementById('estado').value,
+                imagen: document.getElementById('imagen').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                descripcion: document.getElementById('descripcion').value
+            };
+
+            // Petición POST a tu Script de Google (Usando no-cors debido a políticas de redirección de Google)
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(() => {
+                msgBox.className = "text-center text-xs tracking-wider py-3 border border-emerald-800 bg-emerald-950/40 text-emerald-400";
+                msgBox.innerText = "¡Reloj agregado con éxito a Google Sheets! Ya aparecerá en tu catálogo.";
+                msgBox.classList.remove('hidden');
+                
+                // Limpiar formulario
+                document.getElementById('productForm').reset();
+                document.getElementById('whatsapp').value = "573000000000"; // Restaurar valor por defecto
+            })
+            .catch(error => {
+                msgBox.className = "text-center text-xs tracking-wider py-3 border border-red-800 bg-red-950/40 text-red-400";
+                msgBox.innerText = "Hubo un error al guardar. Inténtalo de nuevo.";
+                msgBox.classList.remove('hidden');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-sm"></i> Guardar Producto en la Base de Datos`;
+            });
+        }
+    </script>
+</body>
+</html>

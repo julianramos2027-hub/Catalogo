@@ -3,159 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Catálogo</title>
+    <title>Panel CRUD - Catálogo de Relojes</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black min-h-screen flex flex-col justify-between">
+<body class="bg-black text-white font-sans antialiased min-h-screen p-6">
 
-    <!-- Encabezado -->
-    <header class="bg-black border-b border-neutral-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
-        <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
-            <h1 class="text-xl font-light tracking-[0.2em] uppercase flex items-center gap-3 text-white">
-                <i class="fa-solid fa-lock text-neutral-400"></i> Panel Administrador
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-8 border-b border-neutral-800 pb-4">
+            <h1 class="text-xl font-light tracking-[0.2em] uppercase text-white flex items-center gap-3">
+                <i class="fa-solid fa-lock text-neutral-400"></i> Panel CRUD Administrador
             </h1>
-            <a href="index.html" class="text-xs text-neutral-400 hover:text-white transition uppercase tracking-widest flex items-center gap-2">
-                <i class="fa-solid fa-arrow-left"></i> Ver Catálogo
-            </a>
-        </div>
-    </header>
-
-    <!-- Contenido Principal / Formulario -->
-    <main class="max-w-2xl mx-auto px-6 py-12 w-full flex-grow">
-        <div class="mb-8">
-            <h2 class="text-lg font-normal tracking-wide text-white mb-1">Agregar Nuevo Reloj</h2>
-            <p class="text-neutral-500 text-xs tracking-wider">Completa los campos para publicar un nuevo modelo instantáneamente en tu Google Sheets.</p>
-        </div>
-
-        <form id="productForm" onsubmit="enviarProducto(event)" class="space-y-6 bg-neutral-950 border border-neutral-800 p-8">
-            
-            <!-- Nombre -->
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Nombre del Modelo *</label>
-                <input type="text" id="nombre" required placeholder="Ej. Rolex Submariner Black" 
-                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+            <div class="space-x-4">
+                <a href="index.html" class="text-xs text-neutral-400 hover:text-white transition uppercase tracking-widest">Ver Catálogo</a>
+                <button onclick="resetForm()" class="bg-white text-black px-4 py-2 text-xs font-medium uppercase tracking-wider hover:bg-neutral-200 transition">Nuevo Reloj</button>
             </div>
+        </header>
 
-            <!-- Precios -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <!-- Formulario (Crear / Editar) -->
+        <div class="bg-neutral-950 border border-neutral-800 p-6 mb-10">
+            <h2 id="form-title" class="text-sm font-semibold uppercase tracking-widest mb-4 text-white">Agregar Nuevo Reloj</h2>
+            <form id="watch-form" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="hidden" id="rowIndex">
+                
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Precio Actual ($) *</label>
-                    <input type="number" id="precio" required placeholder="350000" 
-                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Nombre *</label>
+                    <input type="text" id="nombre" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Precio Original / Oferta ($)</label>
-                    <input type="number" id="precio_original" placeholder="Opcional (para tachar)" 
-                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
-                </div>
-            </div>
-
-            <!-- Categoría y Estado -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Categoría *</label>
-                    <input type="text" id="categoria" required placeholder="Ej. Hombre, Mujer, Quartz" 
-                        class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Precio Actual *</label>
+                    <input type="number" id="precio" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Estado de Disponibilidad *</label>
-                    <select id="estado" class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white cursor-pointer">
-                        <option value="Disponible">Disponible (Entrega inmediata)</option>
-                        <option value="Por encargo">Por encargo (Bajo pedido)</option>
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Precio Original (Opcional)</label>
+                    <input type="number" id="precio_original" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Categoría *</label>
+                    <input type="text" id="categoria" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">URLs de Imágenes (Separadas por comas) *</label>
+                    <input type="text" id="imagen" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">WhatsApp *</label>
+                    <input type="text" id="whatsapp" required value="573000000000" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Estado *</label>
+                    <select id="estado" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer">
+                        <option value="Disponible">Disponible</option>
+                        <option value="Por encargo">Por encargo</option>
                     </select>
                 </div>
+                <div class="md:col-span-4">
+                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Descripción</label>
+                    <textarea id="descripcion" rows="2" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white"></textarea>
+                </div>
+
+                <div class="md:col-span-4 flex justify-end gap-3 mt-2">
+                    <button type="button" onclick="resetForm()" class="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 px-4 py-2 text-xs uppercase tracking-wider border border-neutral-800 transition">Cancelar</button>
+                    <button type="submit" id="btn-guardar" class="bg-white hover:bg-neutral-200 text-black px-6 py-2 text-xs font-medium uppercase tracking-wider transition">Guardar Reloj</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Registros -->
+        <div class="bg-neutral-950 border border-neutral-800 overflow-hidden">
+            <div class="p-4 border-b border-neutral-800 flex justify-between items-center">
+                <h2 class="text-xs uppercase tracking-widest text-neutral-300">Inventario en Pestaña WATCHES</h2>
+                <button onclick="loadWatches()" class="text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 px-3 py-1.5 border border-neutral-800 transition uppercase tracking-wider">Actualizar Tabla</button>
             </div>
-
-            <!-- Enlaces de Imágenes -->
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">URLs de Imágenes (Separadas por comas) *</label>
-                <input type="text" id="imagen" required placeholder="Ej. Imagenes/Men's/Frontal.webp, Imagenes/Men's/Dorsal.png" 
-                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
-                <p class="text-[10px] text-neutral-500 mt-1">Rutas exactas de tus imágenes dentro del repositorio de GitHub.</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-neutral-900 text-neutral-400 text-[10px] uppercase tracking-widest">
+                            <th class="p-4">Imagen</th>
+                            <th class="p-4">Nombre</th>
+                            <th class="p-4">Categoría</th>
+                            <th class="p-4">Precio</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watch-table-body" class="divide-y divide-neutral-900 text-xs">
+                        <!-- Datos dinámicos -->
+                    </tbody>
+                </table>
             </div>
-
-            <!-- WhatsApp -->
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Número de WhatsApp (con código de país) *</label>
-                <input type="text" id="whatsapp" required value="573000000000" 
-                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition">
-            </div>
-
-            <!-- Descripción -->
-            <div>
-                <label class="block text-xs uppercase tracking-widest text-neutral-400 mb-2">Descripción del Reloj</label>
-                <textarea id="descripcion" rows="3" placeholder="Detalles de maquinaria, material de la pulsera, resistencia al agua..." 
-                    class="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-none focus:outline-none focus:border-white text-sm text-white placeholder-neutral-600 transition"></textarea>
-            </div>
-
-            <!-- Botón Enviar -->
-            <button type="submit" id="submitBtn" class="w-full bg-white hover:bg-neutral-200 text-black font-medium tracking-wider py-3 px-4 flex items-center justify-center gap-2 transition duration-200 text-xs uppercase cursor-pointer">
-                <i class="fa-solid fa-cloud-arrow-up text-sm"></i> Guardar Producto en la Base de Datos
-            </button>
-
-            <!-- Mensaje de estado -->
-            <div id="responseMessage" class="hidden text-center text-xs tracking-wider py-3 border"></div>
-        </form>
-    </main>
-
-    <!-- Pie de página -->
-    <footer class="bg-black border-t border-neutral-900 text-center py-8 text-xs text-neutral-600 tracking-wider">
-        <p>&copy; 2026 PANEL ADMINISTRADOR - CATÁLOGO DE RELOJES</p>
-    </footer>
+        </div>
+    </div>
 
     <script>
-        // Tu URL de Google Apps Script proporcionada
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9Uv6y_4XsBQmysUjXvwiCC9J557X55ebP3onqFUJ9Qhy7if1oZmifWisdizdk8wei/exec';
+        const SCRIPT_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; // Reemplaza con tu URL
 
-      function enviarProducto(event) {
+        let watchesData = [];
+
+        window.onload = function() {
+            loadWatches();
+        };
+
+        function loadWatches() {
+            const tbody = document.getElementById('watch-table-body');
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-neutral-500 uppercase tracking-widest text-xs">Cargando inventario...</td></tr>`;
+
+            fetch(`${SCRIPT_URL}?action=read`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        watchesData = res.data;
+                        renderTable(watchesData);
+                    } else {
+                        alert("Error al cargar: " + res.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-400 uppercase tracking-widest text-xs">Error de conexión con la base de datos.</td></tr>`;
+                });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('watch-table-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-neutral-500 uppercase tracking-widest text-xs">No hay relojes registrados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(w => {
+                let imgUrl = w.imagen ? w.imagen.split(',')[0].trim() : '';
+                return `
+                    <tr class="hover:bg-neutral-900/50 transition">
+                        <td class="p-4">
+                            <img src="${imgUrl}" alt="${w.nombre}" class="w-10 h-10 object-cover border border-neutral-800" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'">
+                        </td>
+                        <td class="p-4 font-medium text-white">${w.nombre}</td>
+                        <td class="p-4 text-neutral-400 uppercase tracking-wider text-[10px]">${w.categoria}</td>
+                        <td class="p-4 text-white font-semibold">$${Number(w.precio || 0).toLocaleString('es-CO')}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 text-[10px] uppercase tracking-wider border ${w.estado && w.estado.toLowerCase().includes('encargo') ? 'bg-sky-950/40 text-sky-400 border-sky-800/50' : 'bg-emerald-950/40 text-emerald-400 border-emerald-800/50'}">${w.estado || 'Disponible'}</span>
+                        </td>
+                        <td class="p-4 text-center space-x-2">
+                            <button onclick="editWatch(${w.rowIndex})" class="bg-neutral-900 hover:bg-white hover:text-black text-neutral-300 px-3 py-1.5 text-[10px] uppercase tracking-wider border border-neutral-800 transition">Editar</button>
+                            <button onclick="deleteWatch(${w.rowIndex})" class="bg-neutral-900 hover:bg-red-600 hover:text-white text-neutral-300 px-3 py-1.5 text-[10px] uppercase tracking-wider border border-neutral-800 transition">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleFormSubmit(event) {
             event.preventDefault();
             
-            const btn = document.getElementById('submitBtn');
-            const msgBox = document.getElementById('responseMessage');
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-sm"></i> Guardando en Google Sheets...`;
-            msgBox.classList.add('hidden');
+            const rowIndex = document.getElementById('rowIndex').value;
+            const action = rowIndex ? 'update' : 'create';
 
-            const datos = {
+            const payload = {
+                action: action,
+                rowIndex: rowIndex,
                 nombre: document.getElementById('nombre').value,
                 precio: document.getElementById('precio').value,
                 precio_original: document.getElementById('precio_original').value,
                 categoria: document.getElementById('categoria').value,
-                estado: document.getElementById('estado').value,
+                descripcion: document.getElementById('descripcion').value,
                 imagen: document.getElementById('imagen').value,
                 whatsapp: document.getElementById('whatsapp').value,
-                descripcion: document.getElementById('descripcion').value
+                estado: document.getElementById('estado').value
             };
 
-            // Usamos text/plain para evitar bloqueos de seguridad de CORS en Google Apps Script
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                },
-                body: JSON.stringify(datos)
+                body: JSON.stringify(payload)
             })
-            .then(response => response.text())
-            .then(result => {
-                msgBox.className = "text-center text-xs tracking-wider py-3 border border-emerald-800 bg-emerald-950/40 text-emerald-400";
-                msgBox.innerText = "¡Reloj agregado con éxito! Ve a tu Google Sheets a verificar.";
-                msgBox.classList.remove('hidden');
-                
-                document.getElementById('productForm').reset();
-                document.getElementById('whatsapp').value = "573000000000";
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    resetForm();
+                    loadWatches();
+                } else {
+                    alert("Error: " + res.message);
+                }
             })
-            .catch(error => {
-                msgBox.className = "text-center text-xs tracking-wider py-3 border border-red-800 bg-red-950/40 text-red-400";
-                msgBox.innerText = "Hubo un error al guardar. Inténtalo de nuevo.";
-                msgBox.classList.remove('hidden');
+            .catch(err => {
+                console.error(err);
+                alert("Ocurrió un error al procesar la solicitud.");
             })
             .finally(() => {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-sm"></i> Guardar Producto en la Base de Datos`;
+                btn.innerText = "Guardar Reloj";
             });
+        }
+
+        function editWatch(rowIndex) {
+            const watch = watchesData.find(w => w.rowIndex === rowIndex);
+            if (!watch) return;
+
+            document.getElementById('rowIndex').value = watch.rowIndex;
+            document.getElementById('nombre').value = watch.nombre;
+            document.getElementById('precio').value = watch.precio;
+            document.getElementById('precio_original').value = watch.precio_original;
+            document.getElementById('categoria').value = watch.categoria;
+            document.getElementById('descripcion').value = watch.descripcion;
+            document.getElementById('imagen').value = watch.imagen;
+            document.getElementById('whatsapp').value = watch.whatsapp;
+            document.getElementById('estado').value = watch.estado || 'Disponible';
+
+            document.getElementById('form-title').innerText = "Editar Reloj (" + watch.nombre + ")";
+            document.getElementById('btn-guardar').innerText = "Actualizar Reloj";
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteWatch(rowIndex) {
+            if (!confirm("¿Estás seguro de que deseas eliminar este reloj de la base de datos?")) return;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    loadWatches();
+                } else {
+                    alert("Error al eliminar: " + res.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión al eliminar.");
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('watch-form').reset();
+            document.getElementById('rowIndex').value = '';
+            document.getElementById('form-title').innerText = "Agregar Nuevo Reloj";
+            document.getElementById('btn-guardar').innerText = "Guardar Reloj";
+            document.getElementById('whatsapp').value = "573000000000";
         }
     </script>
 </body>

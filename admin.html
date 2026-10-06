@@ -39,10 +39,6 @@
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Precio Original (Opcional)</label>
                     <input type="number" id="precio_original" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
                 </div>
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Categoría *</label>
-                    <input type="text" id="categoria" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
-                </div>
                 <div class="md:col-span-2">
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">URLs de Imágenes (Separadas por comas) *</label>
                     <input type="text" id="imagen" required class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
@@ -51,12 +47,22 @@
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">WhatsApp *</label>
                     <input type="text" id="whatsapp" required value="573000000000" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white">
                 </div>
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Estado *</label>
-                    <select id="estado" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer">
-                        <option value="Disponible">Disponible</option>
-                        <option value="Por encargo">Por encargo</option>
-                    </select>
+                <!-- Categoría y Estado -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Categoría *</label>
+                        <select id="categoria" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Estado *</label>
+                        <select id="estado" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer">
+                            <option value="Disponible">Disponible</option>
+                            <option value="Por encargo">Por encargo</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="md:col-span-4">
                     <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Descripción</label>

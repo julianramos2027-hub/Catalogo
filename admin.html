@@ -109,13 +109,12 @@
         // Tu URL de Google Apps Script proporcionada
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9Uv6y_4XsBQmysUjXvwiCC9J557X55ebP3onqFUJ9Qhy7if1oZmifWisdizdk8wei/exec';
 
-        function enviarProducto(event) {
+      function enviarProducto(event) {
             event.preventDefault();
             
             const btn = document.getElementById('submitBtn');
             const msgBox = document.getElementById('responseMessage');
             
-            // Cambiar estado visual del botón
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-sm"></i> Guardando en Google Sheets...`;
             msgBox.classList.add('hidden');
@@ -131,23 +130,22 @@
                 descripcion: document.getElementById('descripcion').value
             };
 
-            // Petición POST a tu Script de Google (Usando no-cors debido a políticas de redirección de Google)
+            // Usamos text/plain para evitar bloqueos de seguridad de CORS en Google Apps Script
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(datos)
             })
-            .then(() => {
+            .then(response => response.text())
+            .then(result => {
                 msgBox.className = "text-center text-xs tracking-wider py-3 border border-emerald-800 bg-emerald-950/40 text-emerald-400";
-                msgBox.innerText = "¡Reloj agregado con éxito a Google Sheets! Ya aparecerá en tu catálogo.";
+                msgBox.innerText = "¡Reloj agregado con éxito! Ve a tu Google Sheets a verificar.";
                 msgBox.classList.remove('hidden');
                 
-                // Limpiar formulario
                 document.getElementById('productForm').reset();
-                document.getElementById('whatsapp').value = "573000000000"; // Restaurar valor por defecto
+                document.getElementById('whatsapp').value = "573000000000";
             })
             .catch(error => {
                 msgBox.className = "text-center text-xs tracking-wider py-3 border border-red-800 bg-red-950/40 text-red-400";
